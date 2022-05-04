@@ -1,7 +1,11 @@
+using AutoMapper;
+using StoreLoc.Config;
+using StoreLoc.APIData;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,6 +15,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using StoreLoc.Repositories.IRepo;
+using StoreLoc.Repositories.GenRepo;
 
 namespace StoreLoc
 {
@@ -27,7 +33,10 @@ namespace StoreLoc
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers();
+            services.AddDbContext<DatabaseContext>(options =>
+               options.UseSqlServer(Configuration.GetConnectionString("sqlConnection"))
+           );
+
 
             services.AddCors(o => {
                 o.AddPolicy("AllowAll", builder =>
@@ -36,10 +45,18 @@ namespace StoreLoc
                     .AllowAnyHeader());
             });
 
+            services.AddAutoMapper(typeof(MapInitializer));
+
+            services.AddTransient<IGenericRepoRegister, GenericRepoRegister>();
+
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "StoreLoc", Version = "v1" });
             });
+            services.AddControllers().AddNewtonsoftJson(op =>
+                op.SerializerSettings.ReferenceLoopHandling =
+                    Newtonsoft.Json.ReferenceLoopHandling.Ignore);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
