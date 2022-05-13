@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -6,10 +7,9 @@ using StoreLoc.DTO_s;
 using StoreLoc.Repositories.IRepo;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
-namespace StoreLoc.Controllers
+namespace NationalStoreLocator.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -36,8 +36,8 @@ namespace StoreLoc.Controllers
             try
             {
                 var provinces = await _genericRepoRegister.Provinces.GetAll();
-                var allResulst = _mapper.Map<IList<ProvinceDTO>>(provinces);
-                return Ok(allResulst); //allResult reffering to all references getting called
+                var allResults = _mapper.Map<IList<ProvinceDTO>>(provinces);
+                return Ok(allResults); //allResults reffering to all references getting called
             }
             catch (Exception ex)
             {
@@ -46,6 +46,7 @@ namespace StoreLoc.Controllers
             }
         }
 
+        [Authorize(Roles = "Administrator")]
         [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -54,23 +55,14 @@ namespace StoreLoc.Controllers
             try
             {
                 var province = await _genericRepoRegister.Provinces.Get(q => q.Id == id, new List<string> { "ShoppingCenters", "Stores" });
-                //var prov = await _genericRepoRegister.Provinces.Get(q => q.Id == id, new List<string> { "Stores" });
-                var resultId = _mapper.Map<ProvinceDTO>(province);
-                //var resultId1 = _mapper.Map<ProvinceDTO>(prov);
-                return Ok(resultId);     //here I call one ref to proceed by ID             neeed help with second return method
-
-                 
+                var idResult = _mapper.Map<ProvinceDTO>(province);
+                return Ok(idResult);     //here I call one ref to proceed by ID
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Something Went Wrong in the {nameof(GetProvince)}");
                 return StatusCode(500, "Internal Server Error. Please Try Again Later.");
             }
-        }
-
-        private IActionResult Ok(ProvinceDTO resultId, ProvinceDTO resultId1)
-        {
-            throw new NotImplementedException();
         }
     }
 }

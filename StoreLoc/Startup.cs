@@ -17,6 +17,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using StoreLoc.Repositories.IRepo;
 using StoreLoc.Repositories.GenRepo;
+using StoreLoc.BootStrapExtensions;
+using StoreLoc.Repositories.Services.IAuthServices;
+using StoreLoc.Repositories.Services.AuthServices;
 
 namespace StoreLoc
 {
@@ -37,6 +40,10 @@ namespace StoreLoc
                options.UseSqlServer(Configuration.GetConnectionString("sqlConnection"))
            );
 
+            services.AddAuthentication();
+            services.ConfigureIdentity();
+            services.ConfigureJWT(Configuration);
+
 
             services.AddCors(o => {
                 o.AddPolicy("AllowAll", builder =>
@@ -48,12 +55,15 @@ namespace StoreLoc
             services.AddAutoMapper(typeof(MapInitializer));
 
             services.AddTransient<IGenericRepoRegister, GenericRepoRegister>();
+            services.AddScoped<IAuthManager, AuthManager>();
+
 
 
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "StoreLoc", Version = "v1" });
             });
+
             services.AddControllers().AddNewtonsoftJson(op =>
                 op.SerializerSettings.ReferenceLoopHandling =
                     Newtonsoft.Json.ReferenceLoopHandling.Ignore);
@@ -68,13 +78,14 @@ namespace StoreLoc
             }
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "StoreLoc v1"));
-           
+
             app.UseHttpsRedirection();
 
             app.UseCors("AllowAll");
 
             app.UseRouting();
-
+            
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

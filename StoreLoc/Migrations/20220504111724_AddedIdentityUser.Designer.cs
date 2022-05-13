@@ -3,20 +3,22 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StoreLoc.APIData;
 
 namespace StoreLoc.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20220504111724_AddedIdentityUser")]
+    partial class AddedIdentityUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.16")
+                .HasAnnotation("ProductVersion", "5.0.12")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -44,22 +46,6 @@ namespace StoreLoc.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "4b8631a9-ea16-4b63-a568-0584cd1fc9b9",
-                            ConcurrencyStamp = "64d02fe4-a300-4abe-a4b4-59d540304a10",
-                            Name = "Administrator",
-                            NormalizedName = "ADMINISTRATOR"
-                        },
-                        new
-                        {
-                            Id = "a300cc7c-73dc-496b-b99a-a35c7aff9184",
-                            ConcurrencyStamp = "8c45316c-5197-4e4f-9350-8364a88a558f",
-                            Name = "User",
-                            NormalizedName = "USER"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -480,9 +466,9 @@ namespace StoreLoc.Migrations
                         {
                             Id = 1,
                             Address = "	Flagstaff, Ingquza Hill, 4810, Eastern Cape, South Africa",
-                            Email = "consumer@shoprite.co.za",
+                            Email = "xtrasavings@shoprite.co.za",
                             Name = "Shoprite Flagstaff",
-                            OperationalHours = "Monday-Friday 00:00AM-18:00PM, Saturday-Sunday 08:00AM-17:00PM",
+                            OperationalHours = "Monday-Friday 09:00AM-18:00PM, Saturday-Sunday 08:00AM-17:00PM",
                             PhoneNumber = "039 252 7350",
                             ProvinceId = 1,
                             Rating = 1.7,

@@ -18,6 +18,8 @@ namespace StoreLoc.Config
             CreateMap<ShoppingCenter, CreateShoppingCenterDTO>().ReverseMap();
             CreateMap<Store, StoreDTO>().ReverseMap();
             CreateMap<Store, CreateStoreDTO>().ReverseMap();
+            CreateMap<APIUser, APIUserDTO>().ReverseMap();
+            
         }
     }
 }

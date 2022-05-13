@@ -23,6 +23,7 @@ namespace StoreLoc.DTO_s
         [Required]
         [Range(1, 5)]
         public double Rating { get; set; }
+        public string OperationalHours { get; set; }
 
         [Required]
         public int ProvinceId { get; set; }
