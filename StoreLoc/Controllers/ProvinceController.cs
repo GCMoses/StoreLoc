@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using StoreLoc.APIData;
 using StoreLoc.DTO_s;
 using StoreLoc.Repositories.IRepo;
 using System;
@@ -46,8 +47,8 @@ namespace NationalStoreLocator.Controllers
             }
         }
 
-        [Authorize(Roles = "Administrator")]
-        [HttpGet("{id:int}")]
+        
+        [HttpGet("{id:int}", Name = "GetProvince")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProvince(int id)
@@ -61,6 +62,104 @@ namespace NationalStoreLocator.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Something Went Wrong in the {nameof(GetProvince)}");
+                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
+            }
+        }
+
+
+        [Authorize(Roles = "Administrator")]
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CreateProvince([FromBody] CreateProvinceDTO provinceDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogError($"Invalid POST attempt in {nameof(CreateProvince)}");
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var province = _mapper.Map<Province>(provinceDTO);
+                await _genericRepoRegister.Provinces.Insert(province);
+                await _genericRepoRegister.Save();
+
+                return CreatedAtRoute("GetProvince", new { id = province.Id }, province);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Something Went Wrong in the {nameof(CreateProvince)}");
+                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
+            }
+        }
+
+        [Authorize(Roles = "Administrator")]
+        [HttpPut("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateProvince(int id, [FromBody] UpdateProvinceDTO provinceDTO)
+        {
+            if (!ModelState.IsValid || id < 1)
+            {
+                _logger.LogError($"Invalid UPDATE attempt in {nameof(UpdateProvince)}");
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var province = await _genericRepoRegister.Provinces.Get(q => q.Id == id);
+                if (province == null)
+                {
+                    _logger.LogError($"Invalid UPDATE attempt in {nameof(UpdateProvince)}");
+                    return BadRequest("Submitted data is invalid");
+                }
+
+                _mapper.Map(provinceDTO, province);
+                _genericRepoRegister.Provinces.Update(province);
+                await _genericRepoRegister.Save();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Something Went Wrong in the {nameof(UpdateProvince)}");
+                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
+            }
+        }
+
+        [Authorize(Roles = "Administrator")]
+        [HttpDelete("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteProvince(int id)
+        {
+            if (id < 1)
+            {
+                _logger.LogError($"Invalid DELETE attempt in {nameof(DeleteProvince)}");
+                return BadRequest();
+            }
+
+            try
+            {
+                var province = await _genericRepoRegister.Provinces.Get(q => q.Id == id);
+                if (province == null)
+                {
+                    _logger.LogError($"Invalid DELETE attempt in {nameof(DeleteProvince)}");
+                    return BadRequest("Submitted data is invalid");
+                }
+
+                await _genericRepoRegister.Provinces.Delete(id);
+                await _genericRepoRegister.Save();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Something Went Wrong in the {nameof(DeleteProvince)}");
                 return StatusCode(500, "Internal Server Error. Please Try Again Later.");
             }
         }

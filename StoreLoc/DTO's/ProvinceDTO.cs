@@ -16,6 +16,12 @@ namespace StoreLoc.DTO_s
         public string ShortName { get; set; }
     }
 
+    public class UpdateProvinceDTO : CreateProvinceDTO
+    {
+        public IList<CreateShoppingCenterDTO> ShoppingCenters { get; set; }
+        public IList<CreateStoreDTO> Stores { get; set; }
+    }
+
     public class ProvinceDTO : CreateProvinceDTO
     {
         public int Id { get; set; }

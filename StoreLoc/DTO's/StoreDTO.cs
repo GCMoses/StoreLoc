@@ -36,6 +36,10 @@ namespace StoreLoc.DTO_s
         public int ProvinceId { get; set; }
     }
 
+    public class UpdateStoreDTO : CreateStoreDTO
+    {
+
+    }
     public class StoreDTO : CreateStoreDTO
     {
         public int Id { get; set; }

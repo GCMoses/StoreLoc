@@ -14,10 +14,13 @@ namespace StoreLoc.Config
         {
             CreateMap<Province, ProvinceDTO>().ReverseMap();
             CreateMap<Province, CreateProvinceDTO>().ReverseMap();
+            CreateMap<Province, UpdateProvinceDTO>().ReverseMap();
             CreateMap<ShoppingCenter, ShoppingCenterDTO>().ReverseMap();
             CreateMap<ShoppingCenter, CreateShoppingCenterDTO>().ReverseMap();
+            CreateMap<ShoppingCenter, UpdateShoppingCenterDTO>().ReverseMap();
             CreateMap<Store, StoreDTO>().ReverseMap();
             CreateMap<Store, CreateStoreDTO>().ReverseMap();
+            CreateMap<Store, UpdateStoreDTO>().ReverseMap();
             CreateMap<APIUser, APIUserDTO>().ReverseMap();
             
         }
