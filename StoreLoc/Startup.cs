@@ -20,6 +20,7 @@ using StoreLoc.Repositories.GenRepo;
 using StoreLoc.BootStrapExtensions;
 using StoreLoc.Repositories.Services.IAuthServices;
 using StoreLoc.Repositories.Services.AuthServices;
+using AspNetCoreRateLimit;
 
 namespace StoreLoc
 {
@@ -39,6 +40,13 @@ namespace StoreLoc
             services.AddDbContext<DatabaseContext>(options =>
                options.UseSqlServer(Configuration.GetConnectionString("sqlConnection"))
            );
+
+            services.AddMemoryCache();
+
+            services.ConfigureRateLimiting();
+            services.AddHttpContextAccessor();
+
+            services.ConfigureHttpCacheHeaders();
 
             services.AddAuthentication();
             services.ConfigureIdentity();
@@ -64,9 +72,11 @@ namespace StoreLoc
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "StoreLoc", Version = "v1" });
             });
 
-            services.AddControllers().AddNewtonsoftJson(op =>
+            services.AddControllers().AddNewtonsoftJson(op =>   
                 op.SerializerSettings.ReferenceLoopHandling =
                     Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            services.ConfigureVersioning();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,12 +89,18 @@ namespace StoreLoc
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "StoreLoc v1"));
 
+            app.ConfigureExceptionHandler();
+
             app.UseHttpsRedirection();
 
             app.UseCors("AllowAll");
 
+            app.UseResponseCaching();
+            app.UseHttpCacheHeaders();
+             
             app.UseRouting();
-            
+
+            app.UseIpRateLimiting();
             app.UseAuthentication();
             app.UseAuthorization();
 

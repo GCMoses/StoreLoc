@@ -27,45 +27,30 @@ namespace StoreLoc.Controllers
             _genericRepoRegister = genericRepoRegister;
             _logger = logger;
             _mapper = mapper;
-        } 
+        }
 
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetStores()
+        public async Task<IActionResult> GetStores([FromQuery] QueryParams queryParams)
         {
-            try
-            {
-                var stores = await _genericRepoRegister.Stores.GetAll();
-                var allResults = _mapper.Map<IList<StoreDTO>>(stores);
-                return Ok(allResults); //allResults reffering to all stores references getting called
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something Went Wrong in the {nameof(GetStores)}");
-                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
-            }
+            var stores = await _genericRepoRegister.Stores.GetPagedList(queryParams);
+            var allResults = _mapper.Map<IList<StoreDTO>>(stores);
+            return Ok(allResults); //allResults reffering to all stores references getting called
         }
 
-        
-        [HttpGet("{id:int}", Name ="GetStore")]
+
+        [HttpGet("{id:int}", Name = "GetStore")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStore(int id)
         {
-            try
-            {
-                var store = await _genericRepoRegister.Stores.Get(q => q.Id == id, new List<string> { "Province"});
-                var resultId = _mapper.Map<StoreDTO>(store);
-                return Ok(resultId);     //here I call one ref to proceed by store ID
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something Went Wrong in the {nameof(GetStore)}");
-                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
-            }
+            var store = await _genericRepoRegister.Stores.Get(q => q.Id == id, new List<string> { "Province" });
+            var resultId = _mapper.Map<StoreDTO>(store);
+            return Ok(resultId);     //here I call one ref to proceed by store ID
         }
+
 
         [Authorize(Roles = "Administrator")]
         [HttpPost]
@@ -80,20 +65,13 @@ namespace StoreLoc.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var store = _mapper.Map<Store>(storeDTO);
-                await _genericRepoRegister.Stores.Insert(store);
-                await _genericRepoRegister.Save();
+            var store = _mapper.Map<Store>(storeDTO);
+            await _genericRepoRegister.Stores.Insert(store);
+            await _genericRepoRegister.Save();
 
-                return CreatedAtRoute("GetStore", new { id = store.Id }, store);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something Went Wrong in the {nameof(CreateStore)}");
-                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
-            }
+            return CreatedAtRoute("GetStore", new { id = store.Id }, store);
         }
+
 
         [Authorize(Roles = "Administrator")]
         [HttpPut("{id:int}")]
@@ -108,26 +86,18 @@ namespace StoreLoc.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var store = await _genericRepoRegister.Stores.Get(q => q.Id == id);
+            if (store == null)
             {
-                var store = await _genericRepoRegister.Stores.Get(q => q.Id == id);
-                if (store == null)
-                {
-                    _logger.LogError($"Invalid UPDATE attempt in {nameof(UpdateStore)}");
-                    return BadRequest("Submitted data is invalid");
-                }
-
-                _mapper.Map(storeDTO, store);
-                _genericRepoRegister.Stores.Update(store);
-                await _genericRepoRegister.Save();
-
-                return NoContent();
+                _logger.LogError($"Invalid UPDATE attempt in {nameof(UpdateStore)}");
+                return BadRequest("Submitted data is invalid");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something Went Wrong in the {nameof(UpdateStore)}");
-                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
-            }
+
+            _mapper.Map(storeDTO, store);
+            _genericRepoRegister.Stores.Update(store);
+            await _genericRepoRegister.Save();
+
+            return NoContent();
         }
 
         [Authorize(Roles = "Administrator")]
@@ -143,25 +113,17 @@ namespace StoreLoc.Controllers
                 return BadRequest();
             }
 
-            try
+            var store = await _genericRepoRegister.Stores.Get(q => q.Id == id);
+            if (store == null)
             {
-                var store = await _genericRepoRegister.Stores.Get(q => q.Id == id);
-                if (store == null)
-                {
-                    _logger.LogError($"Invalid DELETE attempt in {nameof(DeleteStore)}");
-                    return BadRequest("Submitted data is invalid");
-                }
-
-                await _genericRepoRegister.Stores.Delete(id);
-                await _genericRepoRegister.Save();
-
-                return NoContent();
+                _logger.LogError($"Invalid DELETE attempt in {nameof(DeleteStore)}");
+                return BadRequest("Submitted data is invalid");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something Went Wrong in the {nameof(DeleteStore)}");
-                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
-            }
+
+            await _genericRepoRegister.Stores.Delete(id);
+            await _genericRepoRegister.Save();
+
+            return NoContent();
         }
     }
 }

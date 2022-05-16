@@ -1,11 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StoreLoc.APIData;
+using StoreLoc.DTO_s;
 using StoreLoc.Repositories.IRepo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using X.PagedList;
 
 namespace StoreLoc.Repositories.GenRepo
 {
@@ -68,6 +70,22 @@ namespace StoreLoc.Repositories.GenRepo
             }
 
             return await query.AsNoTracking().ToListAsync();
+        }
+
+
+        public async Task<IPagedList<T>> GetPagedList(QueryParams queryParams, List<string> includes = null)
+        {
+            IQueryable<T> query = _dbSet;
+
+            if (includes != null)
+            {
+                foreach (var includePropery in includes)
+                {
+                    query = query.Include(includePropery);
+                }
+            }
+
+            return await query.AsNoTracking().ToPagedListAsync(queryParams.PageNumber, queryParams.PageSize);
         }
 
         public async Task Insert(T entity)

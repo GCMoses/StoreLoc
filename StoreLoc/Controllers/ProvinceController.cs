@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace NationalStoreLocator.Controllers
+namespace StoreLoc.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -32,38 +32,22 @@ namespace NationalStoreLocator.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetProvinces()
+        public async Task<IActionResult> GetProvinces([FromQuery] QueryParams queryParams)
         {
-            try
-            {
-                var provinces = await _genericRepoRegister.Provinces.GetAll();
-                var allResults = _mapper.Map<IList<ProvinceDTO>>(provinces);
-                return Ok(allResults); //allResults reffering to all references getting called
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something Went Wrong in the {nameof(GetProvinces)}");
-                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
-            }
+            var provinces = await _genericRepoRegister.Provinces.GetPagedList(queryParams);
+            var allResults = _mapper.Map<IList<ProvinceDTO>>(provinces);
+            return Ok(allResults); //allResults reffering to all references getting called
         }
 
-        
+
         [HttpGet("{id:int}", Name = "GetProvince")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProvince(int id)
         {
-            try
-            {
-                var province = await _genericRepoRegister.Provinces.Get(q => q.Id == id, new List<string> { "ShoppingCenters", "Stores" });
-                var idResult = _mapper.Map<ProvinceDTO>(province);
-                return Ok(idResult);     //here I call one ref to proceed by ID
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something Went Wrong in the {nameof(GetProvince)}");
-                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
-            }
+            var province = await _genericRepoRegister.Provinces.Get(q => q.Id == id, new List<string> { "ShoppingCenters", "Stores" });
+            var idResult = _mapper.Map<ProvinceDTO>(province);
+            return Ok(idResult);     //here I call one ref to proceed by ID
         }
 
 
@@ -80,20 +64,13 @@ namespace NationalStoreLocator.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var province = _mapper.Map<Province>(provinceDTO);
-                await _genericRepoRegister.Provinces.Insert(province);
-                await _genericRepoRegister.Save();
+            var province = _mapper.Map<Province>(provinceDTO);
+            await _genericRepoRegister.Provinces.Insert(province);
+            await _genericRepoRegister.Save();
 
-                return CreatedAtRoute("GetProvince", new { id = province.Id }, province);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something Went Wrong in the {nameof(CreateProvince)}");
-                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
-            }
+            return CreatedAtRoute("GetProvince", new { id = province.Id }, province);
         }
+
 
         [Authorize(Roles = "Administrator")]
         [HttpPut("{id:int}")]
@@ -107,8 +84,6 @@ namespace NationalStoreLocator.Controllers
                 _logger.LogError($"Invalid UPDATE attempt in {nameof(UpdateProvince)}");
                 return BadRequest(ModelState);
             }
-
-            try
             {
                 var province = await _genericRepoRegister.Provinces.Get(q => q.Id == id);
                 if (province == null)
@@ -116,19 +91,14 @@ namespace NationalStoreLocator.Controllers
                     _logger.LogError($"Invalid UPDATE attempt in {nameof(UpdateProvince)}");
                     return BadRequest("Submitted data is invalid");
                 }
-
                 _mapper.Map(provinceDTO, province);
                 _genericRepoRegister.Provinces.Update(province);
                 await _genericRepoRegister.Save();
 
                 return NoContent();
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something Went Wrong in the {nameof(UpdateProvince)}");
-                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
-            }
         }
+
 
         [Authorize(Roles = "Administrator")]
         [HttpDelete("{id:int}")]
@@ -143,25 +113,17 @@ namespace NationalStoreLocator.Controllers
                 return BadRequest();
             }
 
-            try
+            var province = await _genericRepoRegister.Provinces.Get(q => q.Id == id);
+            if (province == null)
             {
-                var province = await _genericRepoRegister.Provinces.Get(q => q.Id == id);
-                if (province == null)
-                {
-                    _logger.LogError($"Invalid DELETE attempt in {nameof(DeleteProvince)}");
-                    return BadRequest("Submitted data is invalid");
-                }
-
-                await _genericRepoRegister.Provinces.Delete(id);
-                await _genericRepoRegister.Save();
-
-                return NoContent();
+                _logger.LogError($"Invalid DELETE attempt in {nameof(DeleteProvince)}");
+                return BadRequest("Submitted data is invalid");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something Went Wrong in the {nameof(DeleteProvince)}");
-                return StatusCode(500, "Internal Server Error. Please Try Again Later.");
-            }
+
+            await _genericRepoRegister.Provinces.Delete(id);
+            await _genericRepoRegister.Save();
+
+            return NoContent();
         }
     }
 }
