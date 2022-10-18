@@ -1,7 +1,10 @@
 # StoreLoc
 Created a StoreLocator web API... 
 
-Need learn how to sort the files in each individual projects to follow good design patterns
-The code is clean and easily readable.
+Used Entity Framework Core for Database
+
+Logging using SeriLog
+
+Understand the REST design principles to me which is very similar to CRUD 
 
 
